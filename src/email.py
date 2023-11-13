@@ -11,7 +11,9 @@ emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
 @emails.route('/test')
 def test():
-    return jsonify({"a": "b"})
+    emails = Email.query.filter_by(
+        user_id=1)
+    return jsonify(emails)
 
 @emails.route('/')
 @jwt_required()
