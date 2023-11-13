@@ -9,6 +9,10 @@ from flasgger import swag_from
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
 
+@emails.route('/test')
+def test():
+    return jsonify({"a": "b"})
+
 @emails.route('/')
 @jwt_required()
 def getAllEmail():
