@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import string
 import random
+import json
 db = SQLAlchemy()
 
 
@@ -30,6 +31,10 @@ class Email(db.Model):
     is_spam = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, onupdate=datetime.now())
+
+    def toJSON(self):
+        print(self.__dict__)
+        return json.dumps(self)
 
     def __repr__(self) -> str:
         return 'Email>>> {self.url}'

@@ -5,6 +5,7 @@ import validators
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from src.database import Email, db, User
 from flasgger import swag_from
+from sqlalchemy import delete
 
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
@@ -13,7 +14,8 @@ emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 def test():
     emails = Email.query.filter_by(
         user_id=1)
-    return jsonify(emails)
+    return jsonify({"a": "b"})
+
 
 @emails.route('/')
 @jwt_required()
@@ -69,6 +71,29 @@ def create_email():
     email = Email(title=title, body=body, user_id=current_user,
                   receiver_id=receiver_user.id)
     db.session.add(email)
+    # db.session.commit()
+
+    print(str(email))
+    # email.toJSON()
+
+    return jsonify({"a": "a"})
+
+
+@emails.route('/<email_id>', methods=["DELETE"])
+@jwt_required()
+def delete_email(email_id):
+
+    if (not email_id.isnumeric()):
+        return jsonify({
+            'error': 'Email_id is not numeric'
+        }), HTTP_400_BAD_REQUEST
+
+    row = Email.query.filter_by(id=email_id).delete()
+
     db.session.commit()
 
-    return jsonify(email)
+    print(row)
+    if (row == 0):
+        return jsonify({"message": "Delete fail"})
+
+    return jsonify({"message": "Delete successful"})
