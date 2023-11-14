@@ -14,6 +14,7 @@ emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 def test():
     emails = Email.query.filter_by(
         user_id=1)
+
     return jsonify({"a": "b"})
 
 
@@ -23,6 +24,9 @@ def getAllEmail():
     current_user = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 5, type=int)
+    is_spam = request.args.get('is_spam', False, type=bool)
+    
+    print(is_spam)
 
     emails = Email.query.filter_by(
         user_id=current_user).paginate(page=page, per_page=per_page)
@@ -49,7 +53,7 @@ def getAllEmail():
         'has_prev': emails.has_prev,
     }
 
-    return jsonify({"data": data, "meta": meta})
+    return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
 
 @emails.route('/', methods=["POST"])
@@ -71,12 +75,12 @@ def create_email():
     email = Email(title=title, body=body, user_id=current_user,
                   receiver_id=receiver_user.id)
     db.session.add(email)
-    # db.session.commit()
+    db.session.commit()
 
     print(str(email))
     # email.toJSON()
 
-    return jsonify({"a": "a"})
+    return jsonify({"a": "a"}), HTTP_200_OK
 
 
 @emails.route('/<email_id>', methods=["DELETE"])
@@ -94,6 +98,28 @@ def delete_email(email_id):
 
     print(row)
     if (row == 0):
-        return jsonify({"message": "Delete fail"})
+        return jsonify({"message": "Delete fail"}), HTTP_409_CONFLICT
 
-    return jsonify({"message": "Delete successful"})
+    return jsonify({"message": "Delete successful"}), HTTP_200_OK
+
+
+@emails.route('/<email_id>', methods=["PUT"])
+@jwt_required()
+def update_email(email_id):
+    if (not email_id.isnumeric()):
+        return jsonify({
+            'error': 'Email_id is not numeric'
+        }), HTTP_400_BAD_REQUEST
+
+    title = request.get_json().get('title', '')
+    body = request.get_json().get('body', '')
+
+    row = Email.query.filter_by(id=email_id).update(
+        {'title': title, 'body': body})
+
+    db.session.commit()
+
+    if (row == 0):
+        return jsonify({"message": "Update fail"}), HTTP_409_CONFLICT
+
+    return jsonify({"message": "Update successful"}), HTTP_200_OK
