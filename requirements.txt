@@ -26,4 +26,5 @@ toml==0.10.2
 typing-extensions==3.10.0.0
 validators==0.18.2
 Werkzeug==2.0.1
+psycopg2=2.9.9
 zipp==3.5.0
