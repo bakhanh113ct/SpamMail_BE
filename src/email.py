@@ -25,7 +25,7 @@ def getAllEmail():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 5, type=int)
     is_spam = request.args.get('is_spam', False, type=bool)
-    
+
     print(is_spam)
 
     emails = Email.query.filter_by(
@@ -56,6 +56,98 @@ def getAllEmail():
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
 
+@emails.route('/nspam')
+@jwt_required()
+def getAllEmailNotSpam():
+    current_user = get_jwt_identity()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 5, type=int)
+    is_spam = request.args.get('is_spam', False, type=bool)
+
+    emails = Email.query.filter_by(
+        user_id=current_user, is_spam=False).paginate(page=page, per_page=per_page)
+
+    data = []
+
+    for email in emails.items:
+        data.append({
+            "id": email.id,
+            "title": email.title,
+            "body": email.body,
+            "user_id": email.user_id,
+            "receiver_id": email.receiver_id,
+            "is_spam": email.is_spam
+        })
+
+    meta = {
+        "page": emails.page,
+        'pages': emails.pages,
+        'total_count': emails.total,
+        'prev_page': emails.prev_num,
+        'next_page': emails.next_num,
+        'has_next': emails.has_next,
+        'has_prev': emails.has_prev,
+    }
+
+    return jsonify({"data": data, "meta": meta}), HTTP_200_OK
+
+@emails.route('/spam')
+@jwt_required()
+def getAllEmailSpam():
+    current_user = get_jwt_identity()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 5, type=int)
+    is_spam = request.args.get('is_spam', False, type=bool)
+
+    emails = Email.query.filter_by(
+        user_id=current_user, is_spam=True).paginate(page=page, per_page=per_page)
+
+    data = []
+
+    for email in emails.items:
+        data.append({
+            "id": email.id,
+            "title": email.title,
+            "body": email.body,
+            "user_id": email.user_id,
+            "receiver_id": email.receiver_id,
+            "is_spam": email.is_spam
+        })
+
+    meta = {
+        "page": emails.page,
+        'pages': emails.pages,
+        'total_count': emails.total,
+        'prev_page': emails.prev_num,
+        'next_page': emails.next_num,
+        'has_next': emails.has_next,
+        'has_prev': emails.has_prev,
+    }
+
+    return jsonify({"data": data, "meta": meta}), HTTP_200_OK
+
+@emails.get('/<email_id>')
+@jwt_required()
+def getOneEmail(email_id):
+    email = Email.query.filter_by(id=email_id).first()
+
+    if (email is None):
+        return jsonify({
+            'error': 'email_id is not exist'
+        }), HTTP_400_BAD_REQUEST
+
+    return jsonify({
+        "message": "Success",
+        "data": {
+            "title": email.title,
+            "body": email.body,
+            "receiver_email": email.receiver.email,
+            "created_at": email.created_at,
+            "is_spam": email.is_spam
+        }
+    }), HTTP_200_OK
+
+
 @emails.route('/', methods=["POST"])
 @jwt_required()
 def create_email():
@@ -80,7 +172,16 @@ def create_email():
     print(str(email))
     # email.toJSON()
 
-    return jsonify({"a": "a"}), HTTP_200_OK
+    return jsonify({
+        "message": "Create successful",
+        "data": {
+            "title": email.title,
+            "body": email.body,
+            "receiver_email": email.receiver.email,
+            # "created_at": email.created_at,
+            # "is_spam": email.is_spam
+        }
+    }), HTTP_200_OK
 
 
 @emails.route('/<email_id>', methods=["DELETE"])
@@ -122,4 +223,7 @@ def update_email(email_id):
     if (row == 0):
         return jsonify({"message": "Update fail"}), HTTP_409_CONFLICT
 
-    return jsonify({"message": "Update successful"}), HTTP_200_OK
+    return jsonify({"message": "Update successful", "data": {
+        "title": title,
+        "body": body,
+    }}), HTTP_200_OK
