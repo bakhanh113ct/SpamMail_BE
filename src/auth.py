@@ -54,7 +54,7 @@ def register():
 
 
 @auth.post('/login')
-@cross_origin(origins='*', supports_credentials=True)
+@cross_origin(origins=["http://localhost:3000"])
 @swag_from('./docs/auth/login.yaml')
 def login():
     email = request.json.get('email', '')
