@@ -13,7 +13,7 @@ auth = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 
 
 @auth.post('/register')
-@cross_origin(origins='*')
+@cross_origin()
 @swag_from('./docs/auth/register.yaml')
 def register():
     username = request.json['username']

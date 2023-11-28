@@ -43,7 +43,9 @@ def getAllEmail():
             "body": email.body,
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
-            "is_spam": email.is_spam
+            "is_spam": email.is_spam,
+            "senderName": email.receiver.username,
+            'timeSend': email.created_at
         })
 
     meta = {
@@ -80,7 +82,9 @@ def getAllEmailNotSpam():
             "body": email.body,
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
-            "is_spam": email.is_spam
+            "is_spam": email.is_spam,
+            "senderName": email.receiver.username,
+            'timeSend': email.created_at
         })
 
     meta = {
@@ -116,7 +120,9 @@ def getAllEmailSpam():
             "body": email.body,
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
-            "is_spam": email.is_spam
+            "is_spam": email.is_spam,
+            "senderName": email.receiver.username,
+            'timeSend': email.created_at
         })
 
     meta = {
@@ -149,7 +155,9 @@ def getOneEmail(email_id):
             "body": email.body,
             "receiver_email": email.receiver.email,
             "created_at": email.created_at,
-            "is_spam": email.is_spam
+            "is_spam": email.is_spam,
+            "senderName": email.receiver.username,
+            'timeSend': email.created_at
         }
     }), HTTP_200_OK
 
