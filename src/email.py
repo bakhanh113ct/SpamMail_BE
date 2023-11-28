@@ -21,7 +21,7 @@ def test():
 
 
 @emails.route('/')
-@cross_origin(origins='*', supports_credentials=True)
+@cross_origin(origins='*', supports_credentials=True, allow_headers=['Content-Type','Authorization'])
 @jwt_required()
 def getAllEmail():
     current_user = get_jwt_identity()
