@@ -54,7 +54,7 @@ def register():
 
 
 @auth.post('/login')
-@cross_origin(origins=["http://localhost:3000"])
+@cross_origin()
 @swag_from('./docs/auth/login.yaml')
 def login():
     email = request.json.get('email', '')
@@ -71,7 +71,7 @@ def login():
             access = create_access_token(
                 identity=user.id, expires_delta=timedelta(days=7))
 
-            return jsonify({
+            response = jsonify({
                 'user': {
                     'refresh': refresh,
                     'access': access,
@@ -80,6 +80,10 @@ def login():
                 }
 
             }), HTTP_200_OK
+
+            # response.headers.add("Access-Control-Allow-Origin", "*")
+
+            return response
 
     return jsonify({'error': 'Wrong credentials'}), HTTP_401_UNAUTHORIZED
 
