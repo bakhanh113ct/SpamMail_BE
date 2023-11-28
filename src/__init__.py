@@ -8,11 +8,13 @@ from src.database import db
 from flask_jwt_extended import JWTManager
 from flasgger import Swagger, swag_from
 from src.config.swagger import template, swagger_config
+from flask_cors import CORS, cross_origin
 
 
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
 
     if test_config is None:
         app.config.from_mapping(
@@ -39,15 +41,15 @@ def create_app(test_config=None):
 
     Swagger(app, config=swagger_config, template=template)
 
-    @app.get('/<short_url>')
-    @swag_from('./docs/short_url.yaml')
-    def redirect_to_url(short_url):
-        bookmark = Bookmark.query.filter_by(short_url=short_url).first_or_404()
+    # @app.get('/<short_url>')
+    # @swag_from('./docs/short_url.yaml')
+    # def redirect_to_url(short_url):
+    #     bookmark = Bookmark.query.filter_by(short_url=short_url).first_or_404()
 
-        if bookmark:
-            bookmark.visits = bookmark.visits+1
-            db.session.commit()
-            return redirect(bookmark.url)
+    #     if bookmark:
+    #         bookmark.visits = bookmark.visits+1
+    #         db.session.commit()
+    #         return redirect(bookmark.url)
 
     @app.errorhandler(HTTP_404_NOT_FOUND)
     def handle_404(e):

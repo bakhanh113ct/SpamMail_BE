@@ -7,11 +7,13 @@ from flask_jwt_extended import jwt_required, create_access_token, create_refresh
 from flasgger import swag_from
 from src.database import User, db
 from datetime import datetime, timedelta
+from flask_cors import CORS, cross_origin
 
 auth = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 
 
 @auth.post('/register')
+@cross_origin(origins='*')
 @swag_from('./docs/auth/register.yaml')
 def register():
     username = request.json['username']
@@ -52,6 +54,7 @@ def register():
 
 
 @auth.post('/login')
+@cross_origin(origins='*', supports_credentials=True)
 @swag_from('./docs/auth/login.yaml')
 def login():
     email = request.json.get('email', '')
@@ -82,6 +85,7 @@ def login():
 
 
 @auth.get("/me")
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 @swag_from('./docs/auth/me.yaml')
 def me():
@@ -94,6 +98,7 @@ def me():
 
 
 @auth.get('/token/refresh')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required(refresh=True)
 def refresh_users_token():
     identity = get_jwt_identity()

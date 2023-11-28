@@ -6,11 +6,13 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from src.database import Email, db, User
 from flasgger import swag_from
 from sqlalchemy import delete
+from flask_cors import CORS, cross_origin
 
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
 
 @emails.route('/test')
+@cross_origin(origin='*')
 def test():
     emails = Email.query.filter_by(
         user_id=1)
@@ -19,6 +21,7 @@ def test():
 
 
 @emails.route('/')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmail():
     current_user = get_jwt_identity()
@@ -57,6 +60,7 @@ def getAllEmail():
 
 
 @emails.route('/nspam')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmailNotSpam():
     current_user = get_jwt_identity()
@@ -92,6 +96,7 @@ def getAllEmailNotSpam():
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
 @emails.route('/spam')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmailSpam():
     current_user = get_jwt_identity()
@@ -127,6 +132,7 @@ def getAllEmailSpam():
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
 @emails.get('/<email_id>')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getOneEmail(email_id):
     email = Email.query.filter_by(id=email_id).first()
@@ -149,6 +155,7 @@ def getOneEmail(email_id):
 
 
 @emails.route('/', methods=["POST"])
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def create_email():
     current_user = get_jwt_identity()
@@ -185,6 +192,7 @@ def create_email():
 
 
 @emails.route('/<email_id>', methods=["DELETE"])
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def delete_email(email_id):
 
@@ -205,6 +213,7 @@ def delete_email(email_id):
 
 
 @emails.route('/<email_id>', methods=["PUT"])
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def update_email(email_id):
     if (not email_id.isnumeric()):
