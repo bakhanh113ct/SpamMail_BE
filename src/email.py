@@ -20,8 +20,8 @@ def test():
     return jsonify({"a": "b"})
 
 
-@emails.route('/')
-@cross_origin(origins='*', supports_credentials=True, allow_headers=['Content-Type','Authorization'])
+@emails.get('/')
+@cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmail():
     current_user = get_jwt_identity()
@@ -61,7 +61,7 @@ def getAllEmail():
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
 
-@emails.route('/nspam')
+@emails.get('/nspam')
 @cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmailNotSpam():
@@ -99,7 +99,7 @@ def getAllEmailNotSpam():
 
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
 
-@emails.route('/spam')
+@emails.get('/spam')
 @cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
 def getAllEmailSpam():
