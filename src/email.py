@@ -5,7 +5,7 @@ import validators
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from src.database import Email, db, User
 from flasgger import swag_from
-from sqlalchemy import delete
+from sqlalchemy import delete, desc, asc
 from flask_cors import CORS, cross_origin
 
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
@@ -26,13 +26,13 @@ def test():
 def getAllEmail():
     current_user = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 5, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     is_spam = request.args.get('is_spam', False, type=bool)
 
     print(is_spam)
 
     emails = Email.query.filter_by(
-        receiver_id=current_user).paginate(page=page, per_page=per_page)
+        receiver_id=current_user).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
 
     data = []
 
@@ -44,8 +44,8 @@ def getAllEmail():
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
             "is_spam": email.is_spam,
-            "senderName": email.receiver.username,
-            'timeSend': email.created_at
+            "sender_name": email.receiver.username,
+            'time_send': email.created_at
         })
 
     meta = {
@@ -67,11 +67,11 @@ def getAllEmail():
 def getAllEmailNotSpam():
     current_user = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 5, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     is_spam = request.args.get('is_spam', False, type=bool)
 
     emails = Email.query.filter_by(
-        receiver_id=current_user, is_spam=False).paginate(page=page, per_page=per_page)
+        receiver_id=current_user, is_spam=False).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
 
     data = []
 
@@ -83,8 +83,8 @@ def getAllEmailNotSpam():
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
             "is_spam": email.is_spam,
-            "senderName": email.receiver.username,
-            'timeSend': email.created_at
+            "sender_name": email.receiver.username,
+            'time_send': email.created_at
         })
 
     meta = {
@@ -98,6 +98,7 @@ def getAllEmailNotSpam():
     }
 
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
+
 
 @emails.get('/spam')
 @cross_origin(origins='*', supports_credentials=True)
@@ -105,11 +106,11 @@ def getAllEmailNotSpam():
 def getAllEmailSpam():
     current_user = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 5, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     is_spam = request.args.get('is_spam', False, type=bool)
 
     emails = Email.query.filter_by(
-        receiver_id=current_user, is_spam=True).paginate(page=page, per_page=per_page)
+        receiver_id=current_user, is_spam=True).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
 
     data = []
 
@@ -121,8 +122,8 @@ def getAllEmailSpam():
             "user_id": email.user_id,
             "receiver_id": email.receiver_id,
             "is_spam": email.is_spam,
-            "senderName": email.receiver.username,
-            'timeSend': email.created_at
+            "sender_name": email.receiver.username,
+            'time_send': email.created_at
         })
 
     meta = {
@@ -136,6 +137,7 @@ def getAllEmailSpam():
     }
 
     return jsonify({"data": data, "meta": meta}), HTTP_200_OK
+
 
 @emails.get('/<email_id>')
 @cross_origin(origins='*', supports_credentials=True)
@@ -156,8 +158,8 @@ def getOneEmail(email_id):
             "receiver_email": email.receiver.email,
             "created_at": email.created_at,
             "is_spam": email.is_spam,
-            "senderName": email.receiver.username,
-            'timeSend': email.created_at
+            "sender_name": email.receiver.username,
+            'time_send': email.created_at
         }
     }), HTTP_200_OK
 
