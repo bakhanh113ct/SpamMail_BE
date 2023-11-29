@@ -32,7 +32,7 @@ def getAllEmail():
     print(is_spam)
 
     emails = Email.query.filter_by(
-        user_id=current_user).paginate(page=page, per_page=per_page)
+        receiver_id=current_user).paginate(page=page, per_page=per_page)
 
     data = []
 
@@ -71,7 +71,7 @@ def getAllEmailNotSpam():
     is_spam = request.args.get('is_spam', False, type=bool)
 
     emails = Email.query.filter_by(
-        user_id=current_user, is_spam=False).paginate(page=page, per_page=per_page)
+        receiver_id=current_user, is_spam=False).paginate(page=page, per_page=per_page)
 
     data = []
 
@@ -109,7 +109,7 @@ def getAllEmailSpam():
     is_spam = request.args.get('is_spam', False, type=bool)
 
     emails = Email.query.filter_by(
-        user_id=current_user, is_spam=True).paginate(page=page, per_page=per_page)
+        receiver_id=current_user, is_spam=True).paginate(page=page, per_page=per_page)
 
     data = []
 
