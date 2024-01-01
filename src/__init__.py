@@ -3,13 +3,20 @@ from src.constants.http_status_codes import HTTP_404_NOT_FOUND, HTTP_500_INTERNA
 from flask import Flask, config, redirect
 import os
 from src.auth import auth
-from src.email import emails
 from src.database import db
 from flask_jwt_extended import JWTManager
 from flasgger import Swagger, swag_from
 from src.config.swagger import template, swagger_config
 from flask_cors import CORS, cross_origin
+import re
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from src.service.naive_bayes import NaiveBayesMultinomial, preprocess_text
+from src.email import emails
+from src.email import nb, vectorizer
+# from ..src.service.naive_bayes import nb, preprocess_text
 
+# nb = NaiveBayesMultinomial()
 
 def create_app(test_config=None):
 
@@ -35,7 +42,17 @@ def create_app(test_config=None):
 
     # db.app = app
     db.init_app(app)
+    
+    
+    #init classifier
+    trainDf = pd.read_csv('src/assets/spam.csv')
+    # vectorizer = CountVectorizer()
+    trainDf['Message'] = trainDf['Message'].apply(preprocess_text)
+    X_train = vectorizer.fit_transform(trainDf["Message"]).toarray()
+    y_train=trainDf['Category'].values
+    nb.fit(X_train, y_train)
 
+    #init route
     JWTManager(app)
     app.register_blueprint(auth)
     app.register_blueprint(emails)

@@ -1,4 +1,11 @@
 import numpy as np
+import re
+
+def preprocess_text(text):
+    # Loại bỏ ký tự đặc biệt và chuyển đổi về chữ thường
+    text = re.sub('[^a-zA-Z\s]', '', text)
+    text = text.lower()
+    return text
 
 class NaiveBayesMultinomial:
     def fit(self, X, y):
