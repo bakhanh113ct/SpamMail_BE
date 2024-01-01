@@ -35,6 +35,8 @@ def create_app(test_config=None):
 
     # db.app = app
     db.init_app(app)
+    
+    # app.run(host='0.0.0.0', port=5000)
 
     JWTManager(app)
     app.register_blueprint(auth)
