@@ -7,10 +7,33 @@ from src.database import Email, db, User
 from flasgger import swag_from
 from sqlalchemy import delete, desc, asc
 from flask_cors import CORS, cross_origin
-
+from service.naive_bayes import NaiveBayesMultinomial
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import re
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
+def preprocess_text(text):
+    # Loại bỏ ký tự đặc biệt và chuyển đổi về chữ thường
+    text = re.sub('[^a-zA-Z\s]', '', text)
+    text = text.lower()
+    return text
 
+trainDf = pd.read_csv('../assets/spam.csv')
+vectorizer = CountVectorizer()
+trainDf['Message'] = trainDf['Message'].apply(preprocess_text)
+X_train = vectorizer.fit_transform(trainDf["Message"]).toarray()
+y_train=trainDf['Category'].values
+nb = NaiveBayesMultinomial()
+nb.fit(X_train, y_train)
+
+def is_spam(email_content):
+    cleaned_email = preprocess_text(email_content)
+    email_vectorized = vectorizer.transform([cleaned_email]).toarray()
+    prediction = nb.predict(email_vectorized)
+
+    return prediction == "spam"
+#
 @emails.route('/test')
 @cross_origin(origin='*')
 def test():
