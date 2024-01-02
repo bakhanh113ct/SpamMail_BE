@@ -51,6 +51,7 @@ def create_app(test_config=None):
     X_train = vectorizer.fit_transform(trainDf["Message"]).toarray()
     y_train=trainDf['Category'].values
     nb.fit(X_train, y_train)
+    print('done')
 
     #init route
     JWTManager(app)

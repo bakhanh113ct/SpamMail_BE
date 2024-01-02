@@ -259,6 +259,7 @@ def delete_email(email_id):
     return jsonify({"message": "Delete successful"}), HTTP_200_OK
 
 
+#Mark spam or not
 @emails.route('/<email_id>', methods=["PUT"])
 @cross_origin(origins='*', supports_credentials=True)
 @jwt_required()
@@ -268,18 +269,26 @@ def update_email(email_id):
             'error': 'Email_id is not numeric'
         }), HTTP_400_BAD_REQUEST
 
-    title = request.get_json().get('title', '')
-    body = request.get_json().get('body', '')
+    is_spam = request.args.get('isSpam', False, type=is_it_true)
+    print(is_spam)
+    # title = request.get_json().get('title', '')
+    # body = request.get_json().get('body', '')
 
     row = Email.query.filter_by(id=email_id).update(
-        {'title': title, 'body': body})
+        {'is_spam': is_spam})
 
     db.session.commit()
 
     if (row == 0):
         return jsonify({"message": "Update fail"}), HTTP_409_CONFLICT
+    # return jsonify({"message": "Update successful", "data": {
+    #     "title": 'title',
+    #     "body": 'body',
+    # }}), HTTP_200_OK
 
     return jsonify({"message": "Update successful", "data": {
-        "title": title,
-        "body": body,
+        "is_spam": is_spam,
     }}), HTTP_200_OK
+
+def is_it_true(value):
+  return value.lower() == 'true'
