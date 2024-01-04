@@ -9,13 +9,69 @@ from sqlalchemy import delete, desc, asc
 from flask_cors import CORS, cross_origin
 from sklearn.feature_extraction.text import CountVectorizer
 from src.service.naive_bayes import preprocess_text, NaiveBayesMultinomial
-
+import pandas as pd
+import requests
+import schedule
+from threading import Thread
+# from src import train_model
+import time
 nb = NaiveBayesMultinomial()
 
 emails = Blueprint("emails", __name__, url_prefix="/api/v1/emails")
 
 vectorizer = CountVectorizer()
 
+def merge_data_and_export_csv():
+    # Đọc dữ liệu từ file CSV đã có vào DataFrame
+    existing_data = pd.read_csv('src/assets/spam.csv')
+
+    # Truy vấn dữ liệu từ cơ sở dữ liệu trong Flask
+    flask_data = Email.query.all()
+
+    # Chuyển đổi dữ liệu từ Flask thành DataFrame
+    flask_data_df = pd.DataFrame([(data.is_spam, data.body) for data in flask_data], columns=['Category', 'Message'])
+    flask_data_df.replace({True: 'spam', False: 'ham'}, inplace=True)
+    # Gộp dữ liệu từ file CSV và dữ liệu từ Flask
+    merged_data = pd.concat([existing_data, flask_data_df], ignore_index=True)
+
+    # Lưu dữ liệu mới vào file CSV mới
+    print('done merge')
+    merged_data.to_csv('src/assets/merge_data.csv', index=False)
+
+def train_model():
+    merge_data_and_export_csv()
+    trainDf = pd.read_csv('src/assets/merge_data.csv')
+    # vectorizer = CountVectorizer()
+    trainDf['Message'] = trainDf['Message'].apply(preprocess_text)
+    X_train = vectorizer.fit_transform(trainDf["Message"]).toarray()
+    y_train=trainDf['Category'].values
+    print('done')
+    nb.fit(X_train, y_train)
+
+def fetch_data_from_api():
+    # Gửi yêu cầu GET đến endpoint của Flask
+    response = requests.get('http://127.0.0.1:5000/api/v1/emails/test')  # Thay đổi URL endpoint tùy thuộc vào endpoint của bạn
+    
+    if response.status_code == 200:
+        # Xử lý dữ liệu được trả về từ API endpoint
+        data = response.json()
+        print("Received data:", data)
+    else:
+        print("Failed to fetch data from the API")
+
+def schedule_task():
+    # fetch_data_from_api()
+    # schedule.every().day.at("00:00").do(fetch_data_from_api)
+    while True:
+        # Gọi hàm fetch_data_from_api() sau mỗi 10 giây
+        fetch_data_from_api()
+        time.sleep(24*3600)
+        # schedule.run_pending()
+        # time.sleep(1)
+
+# schedule_task()
+schedule_thread = Thread(target=schedule_task)
+schedule_thread.start()
 
 def spam_classifier(email_content):
     cleaned_email = preprocess_text(email_content)
@@ -24,12 +80,13 @@ def spam_classifier(email_content):
     # return True
 
     return prediction == "spam"
-#
+
 
 
 @emails.route('/test')
 @cross_origin(origin='*')
 def test():
+    train_model()
     emails = Email.query.filter_by(
         user_id=1)
 
@@ -233,7 +290,7 @@ def create_email():
             "body": email.body,
             "receiver_email": email.receiver.email,
             # "created_at": email.created_at,
-            # "is_spam": email.is_spam
+            "is_spam": email.is_spam
         }
     }), HTTP_200_OK
 
