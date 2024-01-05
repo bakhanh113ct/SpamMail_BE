@@ -100,6 +100,8 @@ def create_app(test_config=None):
     # y_train=trainDf['Category'].values
     # nb.fit(X_train, y_train)
     # print('done')
+    
+    # app.run(host='0.0.0.0', port=5000)
 
     #init route
     JWTManager(app)

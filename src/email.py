@@ -229,6 +229,50 @@ def getAllEmailSpam():
     except:
         return jsonify({"data": [], "msg": "No data in page {}".format(page)}), HTTP_400_BAD_REQUEST
 
+@emails.get('/sended')
+@cross_origin(origins='*', supports_credentials=True)
+@jwt_required()
+def getEmailSended():
+    current_user = get_jwt_identity()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    is_spam = request.args.get('is_spam', False, type=bool)
+
+    try:
+        emails = Email.query.filter_by(
+            user_id=current_user, is_spam=False).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
+
+        if (emails.total == 0):
+            return jsonify({"data": [], "msg": "No data in page {}".format(page)}), HTTP_200_OK
+
+        data = []
+
+        for email in emails.items:
+            data.append({
+                "id": email.id,
+                "title": email.title,
+                "body": email.body,
+                "user_id": email.user_id,
+                "receiver_id": email.receiver_id,
+                "is_spam": email.is_spam,
+                "sender_name": email.receiver.username,
+                'time_send': email.created_at
+            })
+
+        meta = {
+            "page": emails.page,
+            'pages': emails.pages,
+            'total_count': emails.total,
+            'prev_page': emails.prev_num,
+            'next_page': emails.next_num,
+            'has_next': emails.has_next,
+            'has_prev': emails.has_prev,
+        }
+
+        return jsonify({"data": data, "meta": meta}), HTTP_200_OK
+
+    except:
+        return jsonify({"data": [], "msg": "No data in page {}".format(page)}), HTTP_400_BAD_REQUEST
 
 @emails.get('/<email_id>')
 @cross_origin(origins='*', supports_credentials=True)
