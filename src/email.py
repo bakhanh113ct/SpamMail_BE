@@ -294,7 +294,9 @@ def getOneEmail(email_id):
             "receiver_email": email.receiver.email,
             "created_at": email.created_at,
             "is_spam": email.is_spam,
-            "sender_name": email.receiver.username,
+            "receiver_name": email.receiver.username,
+            "sender_email": email.user.email,
+            "sender_name": email.user.username,
             'time_send': email.created_at
         }
     }), HTTP_200_OK
