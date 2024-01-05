@@ -322,8 +322,8 @@ def create_email():
 
     email = Email(title=title, body=body, user_id=current_user,
                   receiver_id=receiver_user.id, is_spam=is_spam)
-    # db.session.add(email)
-    # db.session.commit()
+    db.session.add(email)
+    db.session.commit()
 
     print(str(email))
     # email.toJSON()
