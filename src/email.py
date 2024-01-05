@@ -50,7 +50,7 @@ def train_model():
 
 def fetch_data_from_api():
     # Gửi yêu cầu GET đến endpoint của Flask
-    response = requests.get('http://127.0.0.1:5000/api/v1/emails/test')  # Thay đổi URL endpoint tùy thuộc vào endpoint của bạn
+    response = requests.get('http://127.0.0.1:5000/api/v1/emails/test')
     
     if response.status_code == 200:
         # Xử lý dữ liệu được trả về từ API endpoint
@@ -63,13 +63,14 @@ def schedule_task():
     # fetch_data_from_api()
     # schedule.every().day.at("00:00").do(fetch_data_from_api)
     while True:
-        # Gọi hàm fetch_data_from_api() sau mỗi 10 giây
+        # Gọi hàm fetch_data_from_api() sau mỗi 1 ngày
         fetch_data_from_api()
         time.sleep(24*3600)
         # schedule.run_pending()
         # time.sleep(1)
 
 # schedule_task()
+#start other thread
 schedule_thread = Thread(target=schedule_task)
 schedule_thread.start()
 
@@ -321,8 +322,8 @@ def create_email():
 
     email = Email(title=title, body=body, user_id=current_user,
                   receiver_id=receiver_user.id, is_spam=is_spam)
-    db.session.add(email)
-    db.session.commit()
+    # db.session.add(email)
+    # db.session.commit()
 
     print(str(email))
     # email.toJSON()
@@ -332,7 +333,7 @@ def create_email():
         "data": {
             "title": email.title,
             "body": email.body,
-            "receiver_email": email.receiver.email,
+            # "receiver_email": email.receiver.email,
             # "created_at": email.created_at,
             "is_spam": email.is_spam
         }
