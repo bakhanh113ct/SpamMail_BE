@@ -241,7 +241,7 @@ def getEmailSended():
 
     try:
         emails = Email.query.filter_by(
-            user_id=current_user, is_spam=False).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
+            user_id=current_user).order_by(desc('created_at')).paginate(page=page, per_page=per_page)
 
         if (emails.total == 0):
             return jsonify({"data": [], "msg": "No data in page {}".format(page)}), HTTP_200_OK
